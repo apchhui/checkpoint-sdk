@@ -31,6 +31,7 @@ class Decoder:
                 return idl
     
     def decode(self, base64_str: str, program_address: str):
+        if not isinstance(base64_str, str): raise ValueError(f"Base 64 must be string! Current type: {type(base64_str)} | decode()")
         def normalize_b64(s: str) -> str:
             s = s.strip().split()[-1]
             return s + "=" * (-len(s) % 4)
@@ -270,6 +271,39 @@ class Decoder:
 
         return None
 
+    def decode_on_demand(self, tx, program_id):
+        data = self.extract_program_data(tx, program_id)
+        return self.decode(data, program_id) if data else None
+
+    def extract_all_program_data(self, tx, program_id):
+        result = []
+        params = tx.get("params")
+        if not params:
+            return None
+
+        results = params.get("result")
+        if not results:
+            return None
+
+        value = results.get("value")
+        if not value:
+            return None
+        
+        logs = value.get("logs")
+        if not isinstance(logs, list):
+            return None
+
+        for i in range(len(logs) - 1):
+            line = logs[i]
+
+            if (
+                isinstance(line, str)
+                and line.startswith("Program data:")
+            ):
+                result.append(line.replace("Program data:", "").strip())
+
+        return result
+
     def _fetch_idl(self, program_address: str) -> Optional[Dict[str, Any]]:
         url = f"https://api-v2.solscan.io/v2/account/anchor_idl?address={program_address}"
 
@@ -341,10 +375,8 @@ async def logs_subscribe():
 
             if data.get("method") == "logsNotification":
 
-                b64_data = decoder.extract_program_data(data, PROGRAM_ID)
-                if b64_data:
-                    decoded = decoder.decode(b64_data, PROGRAM_ID)
-                    print(decoded)
+                # print(decoder.decode_on_demand(data, PROGRAM_ID))
+                pass
 
 
 if __name__ == "__main__":
