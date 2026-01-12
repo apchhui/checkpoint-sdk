@@ -1,3 +1,4 @@
+### --!-- --!-- --!-- better not to use python in Solana high performance production apps --!-- --!-- --!-- ###
 import requests
 from typing import Optional, Dict, Any, Tuple, List
 from exceptions import TooManyElements, NoElements
@@ -31,7 +32,7 @@ class Decoder:
                 return idl
     
     def decode(self, base64_str: str, program_address: str):
-        if not isinstance(base64_str, str): raise ValueError(f"Base 64 must be string! Current type: {type(base64_str)} | decode()")
+        if not isinstance(base64_str, str): raise ValueError(f"Base 64 must be typeof string! Current type: {type(base64_str)} | decode()")
         def normalize_b64(s: str) -> str:
             s = s.strip().split()[-1]
             return s + "=" * (-len(s) % 4)
@@ -40,7 +41,7 @@ class Decoder:
         if not idl:
             raise ValueError(f"IDL not found for program: {program_address}")
             
-        events = idl.get("events", [])  # list
+        events = idl.get("events", [])
 
         b64_clean = normalize_b64(base64_str)
         base64_raw = base64.b64decode(b64_clean)
