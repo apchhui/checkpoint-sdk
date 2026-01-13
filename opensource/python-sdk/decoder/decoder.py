@@ -32,6 +32,9 @@ class Decoder:
                 return idl
     
     def decode(self, base64_str: str, program_address: str):
+        """
+        Decodes input `Program data:` base64 string by program IDL
+        """
         if not isinstance(base64_str, str): raise ValueError(f"Base 64 must be typeof string! Current type: {type(base64_str)} | decode()")
         def normalize_b64(s: str) -> str:
             s = s.strip().split()[-1]
@@ -144,8 +147,8 @@ class Decoder:
                 type_def = t
                 break
         
-        if not type_def:
-            raise ValueError(f"Type definition not found: {name}")
+        # if not type_def:
+        #     raise ValueError(f"Type definition not found: {name}")
 
         kind = type_def["type"]["kind"]
 
@@ -181,8 +184,6 @@ class Decoder:
                     val, offset = self._read_type(f["type"], data, offset, idl)
                     obj[f["name"]] = val
                 return {variant["name"]: obj}, offset
-
-        raise ValueError(f"Unknown defined type kind: {kind}")
 
     def _read_type(self, t, data: bytes, offset: int, idl):
         if isinstance(t, str):
@@ -273,10 +274,16 @@ class Decoder:
         return None
 
     def decode_on_demand(self, tx, program_id):
+        """
+        Automatically extracts first entry `Program data:` of set program address and returns decoded data
+        """
         data = self.extract_program_data(tx, program_id)
         return self.decode(data, program_id) if data else None
 
-    def extract_all_program_data(self, tx, program_id):
+    def extract_all_program_data(self, tx):
+        """
+        Extracts all `Program data:` strings from tx, so you can use it to `unsafe` parse all your strings using batch_decode()
+        """
         result = []
         params = tx.get("params")
         if not params:
@@ -304,6 +311,12 @@ class Decoder:
                 result.append(line.replace("Program data:", "").strip())
 
         return result
+
+    def batch_decode(self, extract_all_program_data_result: list, program_address: str) -> Optional[List[dict]]:
+        results = {}
+        for data in extract_all_program_data_result:
+            results[data[:10]] = self.decode(data, program_address)
+        return results
 
     def _fetch_idl(self, program_address: str) -> Optional[Dict[str, Any]]:
         url = f"https://api-v2.solscan.io/v2/account/anchor_idl?address={program_address}"
@@ -375,7 +388,7 @@ async def logs_subscribe():
                 continue
 
             if data.get("method") == "logsNotification":
-
+                print(decoder.batch_decode(decoder.extract_all_program_data(data), PROGRAM_ID))
                 # print(decoder.decode_on_demand(data, PROGRAM_ID))
                 pass
 
