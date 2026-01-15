@@ -7,7 +7,5 @@ Solana SDK for:
 - Wallet utilities
 - etc.
 
-## Install Python SDK
-
-```bash
-pip install checkpoint-sdk
+## SDKs
+- Python: https://github.com/apchhui/checkpoint-python
