@@ -1,22 +1,29 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "checkpoing"
-version = "0.1.0"
-description = "Python SDK multitool for Solana blockchain"
+name = "checkpoint-sdk"
+version = "0.1.1"
+description = "Program-agnostic Solana IDL transaction decoder and SDK"
 readme = "README.md"
-requires-python = ">=3.9"
+license = { text = "MIT" }
 authors = [
   { name = "apchhui" }
 ]
+requires-python = ">=3.10"
 
 dependencies = [
-  "requests",
-  "anchorpy",
-  "solders"
+  "requests>=2.31.0",
+  "solana>=0.30.0",
+  "solders>=0.19.0",
+  "base58>=2.1.1"
 ]
 
 [project.urls]
 Homepage = "https://github.com/apchhui/checkpoint-sdk"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["checkpoint_sdk*"]
+exclude = ["tests*", "test*"]
